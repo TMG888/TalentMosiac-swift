@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentMosaic Swift: From Chat to Charts in Minutes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 20px;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); }
+            33% { background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%); }
+            66% { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #667eea 100%); }
+        }
+        
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: white;
+            padding: 40px 50px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header h1 {
+            font-size: 2.8em;
+            font-weight: 800;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-stats {
+            display: flex;
+            gap: 35px;
+            font-size: 1em;
+            flex-wrap: wrap;
+        }
+        
+        .header-stat {
+            opacity: 0.95;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .header-stat:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .tabs {
+            display: flex;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            position: relative;
+        }
+        
+        .tabs::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 20px 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            color: #6c757d;
+            transition: all 0.4s ease;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .tab-button:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+            transform: translateY(-2px);
+        }
+        
+        .tab-button.active {
+            color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%);
+            font-weight: 800;
+        }
+        
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 20%;
+            right: 20%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #f093fb);
+            border-radius: 2px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scaleX(1); }
+            50% { opacity: 0.8; transform: scaleX(1.1); }
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 35px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .auto-metrics-banner {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
+            color: white;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(240, 147, 251, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .auto-metrics-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shine 3s ease-in-out infinite;
+        }
+        
+        @keyframes shine {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+        
+        .meeting-header {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 35px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .meeting-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .meeting-field {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .meeting-field label {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            opacity: 0.95;
+        }
+        
+        .meeting-field input, .meeting-field select {
+            padding: 14px 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.95);
+            color: #2c3e50;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .meeting-field input:focus, .meeting-field select:focus {
+            outline: none;
+            background: white;
+            border-color: rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 25px;
+        }
+        
+        .template-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-align: center;
+        }
+        
+        .template-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+        
+        .template-card.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: white;
+            border-color: #f093fb;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+        
+        .template-icon {
+            font-size: 2em;
+            margin-bottom: 12px;
+        }
+        
+        .template-title {
+            font-size: 1em;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        
+        .template-desc {
+            font-size: 0.8em;
+            opacity: 0.8;
+            line-height: 1.3;
+        }
+        
+        .template-duration {
+            margin-top: 8px;
+            font-size: 0.75em;
+            font-weight: 500;
+            padding: 3px 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        .insight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 16px;
+            margin: 30px 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .insight-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 15s linear infinite;
+        }
+        
+        .insight-box h4 {
+            margin-bottom: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .insight-box p {
+            position: relative;
+            z-index: 1;
+            line-height: 1.6;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        }
+        
+        .metric-card:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .metric-value {
+            font-size: 2.4em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .metric-trend {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        
+        .trend-up {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .trend-down {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .trend-stable {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .download-section {
+            text-align: center;
+            margin-top: 40px;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .download-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 25s linear infinite reverse;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.95) 100%);
+            color: #667eea;
+            padding: 18px 35px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            background: white;
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .template-grid, .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .meeting-header {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .tab-content {
+                padding: 20px;
+            }
+            
+            .header-stats {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1>
+                    <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.1em; text-shadow: none;">✨</span>
+                    <span style="margin: 0 10px;">TalentMosaic</span>
+                    <span style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-style: italic;">Swift</span>
+                    <span style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #667eea 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.1em; text-shadow: none;">✨</span>
+                </h1>
+                <div class="header-stats">
+                    <div class="header-stat">🚀 Lightning Fast Setup</div>
+                    <div class="header-stat">📊 Instant Visual Analytics</div>
+                    <div class="header-stat">🎯 Smart Conversation Tracking</div>
+                    <div class="header-stat">💎 Beautiful Data Visualization</div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab(event, 'meeting')">Smart Meeting</button>
+            <button class="tab-button" onclick="switchTab(event, 'analytics')">Live Analytics</button>
+            <button class="tab-button" onclick="switchTab(event, 'team')">Team Dashboard</button>
+            <button class="tab-button" onclick="switchTab(event, 'insights')">Market Insights</button>
+        </div>
+        
+        <!-- Smart Meeting Tab -->
+        <div id="meeting" class="tab-content active">
+            <div class="auto-metrics-banner">
+                <span style="font-size: 1.5em;">⚡</span>
+                <div>
+                    <strong>Auto-Analytics Enabled:</strong> TalentMosaic Swift automatically calculates performance metrics as you type, providing instant insights for data-driven decisions.
+                </div>
+            </div>
+            
+            <div class="meeting-header">
+                <div class="meeting-field">
+                    <label>Manager</label>
+                    <input type="text" id="managerName" placeholder="Manager name">
+                </div>
+                <div class="meeting-field">
+                    <label>Team Member</label>
+                    <input type="text" id="teamMember" placeholder="Team member name">
+                </div>
+                <div class="meeting-field">
+                    <label>Date</label>
+                    <input type="date" id="meetingDate">
+                </div>
+                <div class="meeting-field">
+                    <label>Meeting Type</label>
+                    <select id="meetingType" onchange="handleMeetingTypeChange()">
+                        <option value="">Select meeting type...</option>
+                        <option value="weekly">Weekly Pulse (15m)</option>
+                        <option value="monthly">Monthly Deep-Dive (30m)</option>
+                        <option value="quarterly">Quarterly Strategic (45m)</option>
+                        <option value="project">Project Debrief (25m)</option>
+                        <option value="development">Career Focus (40m)</option>
+                        <option value="onboarding">New Hire Integration (20m)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Real-Time Metrics Display -->
+            <div style="background: white; border-radius: 12px; padding: 30px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">📊 Live Performance Metrics</h3>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-value" id="outcomeImpact">0</span>
+                        <div class="metric-label">Outcome Impact Score</div>
+                        <div class="metric-trend trend-stable">Enter quantitative results</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value" id="actionCount">0</span>
+                        <div class="metric-label">Action Items</div>
+                        <div class="metric-trend trend-stable">Add action items</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value" id="engagementScore">0</span>
+                        <div class="metric-label">Engagement Quality</div>
+                        <div class="metric-trend trend-stable">Based on input depth</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Template Selector -->
+            <div style="background: white; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); overflow: hidden;">
+                <div style="background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); color: white; padding: 20px 25px;">
+                    <h3 style="font-size: 1.3em; font-weight: 600;">🎯 Select Meeting Focus</h3>
+                </div>
+                <div class="template-grid">
+                    <div class="template-card" onclick="selectTemplate('weekly')" id="card-weekly">
+                        <div class="template-icon">⚡</div>
+                        <div class="template-title">Weekly Pulse</div>
+                        <div class="template-desc">Quick wins, blockers, immediate support</div>
+                        <div class="template-duration">15 mins</div>
+                    </div>
+                    
+                    <div class="template-card" onclick="selectTemplate('monthly')" id="card-monthly">
+                        <div class="template-icon">📈</div>
+                        <div class="template-title">Monthly Deep-Dive</div>
+                        <div class="template-desc">Performance analysis, strategic alignment</div>
+                        <div class="template-duration">30 mins</div>
+                    </div>
+                    
+                    <div class="template-card" onclick="selectTemplate('quarterly')" id="card-quarterly">
+                        <div class="template-icon">🎯</div>
+                        <div class="template-title">Quarterly Strategic</div>
+                        <div class="template-desc">Career planning, long-term objectives</div>
+                        <div class="template-duration">45 mins</div>
+                    </div>
+                    
+                    <div class="template-card" onclick="selectTemplate('project')" id="card-project">
+                        <div class="template-icon">🚀</div>
+                        <div class="template-title">Project Debrief</div>
+                        <div class="template-desc">Outcomes analysis, lessons learned</div>
+                        <div class="template-duration">25 mins</div>
+                    </div>
+                    
+                    <div class="template-card" onclick="selectTemplate('development')" id="card-development">
+                        <div class="template-icon">📚</div>
+                        <div class="template-title">Career Focus</div>
+                        <div class="template-desc">Skills development, advancement planning</div>
+                        <div class="template-duration">40 mins</div>
+                    </div>
+                    
+                    <div class="template-card" onclick="selectTemplate('onboarding')" id="card-onboarding">
+                        <div class="template-icon">👋</div>
+                        <div class="template-title">New Hire Integration</div>
+                        <div class="template-desc">Cultural fit, early wins, support needs</div>
+                        <div class="template-duration">20 mins</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dynamic Content Area -->
+            <div id="dynamicContent">
+                <div class="insight-box">
+                    <h4>👆 Select a meeting type above to load the optimized template</h4>
+                    <p>Each template automatically tracks different KPIs and provides real-time performance insights as you complete the meeting.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Live Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <div class="insight-box">
+                <h4>📊 Real-Time Performance Analytics Dashboard</h4>
+                <p>Beautiful charts and insights generated from your conversations automatically appear here.</p>
+            </div>
+        </div>
+        
+        <!-- Team Dashboard Tab -->
+        <div id="team" class="tab-content">
+            <div class="insight-box">
+                <h4>👥 Team Performance Comparison Dashboard</h4>
+                <p>Compare team performance across all meeting types and track collective progress.</p>
+            </div>
+        </div>
+        
+        <!-- Market Insights Tab -->
+        <div id="insights" class="tab-content">
+            <div class="insight-box">
+                <h4>🚀 Market Position & Competitive Advantages</h4>
+                <p>See how TalentMosaic Swift compares to traditional performance tools.</p>
+            </div>
+        </div>
+        
+        <div class="download-section">
+            <h3 style="margin-bottom: 18px; position: relative; z-index: 1;">📥 Get Your Complete TalentMosaic Swift Package</h3>
+            <p style="margin-bottom: 30px; opacity: 0.95; position: relative; z-index: 1;">Download the full TalentMosaic Swift with auto-calculating templates and beautiful analytics</p>
+            <button class="download-btn" onclick="downloadExcel()">📊 Excel Analytics Pack</button>
+            <button class="download-btn" onclick="downloadPDF()">📄 Implementation Guide</button>
+            <button class="download-btn" onclick="downloadCSV()">📈 Performance Data</button>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentMetrics = {
+            outcomeImpact: 0,
+            actionCount: 0,
+            engagementScore: 0
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('meetingDate');
+            if (dateInput) {
+                dateInput.value = today;
+            }
+        });
+
+        // Tab switching functionality
+        function switchTab(event, tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            const selectedTab = document.getElementById(tabName);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Add active class to clicked tab button
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+        }
+
+        // Template selection functionality
+        function selectTemplate(templateType) {
+            // Remove selected class from all template cards
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked template card
+            const selectedCard = document.getElementById(`card-${templateType}`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+            
+            // Update the meeting type dropdown
+            const meetingTypeSelect = document.getElementById('meetingType');
+            if (meetingTypeSelect) {
+                meetingTypeSelect.value = templateType;
+            }
+            
+            // Update the dynamic content
+            updateTemplate(templateType);
+        }
+
+        // Meeting type change handler
+        function handleMeetingTypeChange() {
+            const meetingTypeSelect = document.getElementById('meetingType');
+            if (meetingTypeSelect && meetingTypeSelect.value) {
+                selectTemplate(meetingTypeSelect.value);
+            }
+        }
+
+        // Update template content
+        function updateTemplate(templateType) {
+            const contentDiv = document.getElementById('dynamicContent');
+            if (!contentDiv) return;
+
+            const templates = {
+                weekly: {
+                                        title: "Weekly Pulse Check",
+                                        content: `
+                                            <div class="insight-box">
+                                                <h4>⚡ Weekly Pulse Check</h4>
+                                                <p>Share quick wins, blockers, and immediate support needs. List action items and outcomes below.</p>
+                                                <div style="margin-top: 18px;">
+                                                    <label for="weeklyResults" style="font-weight:600;">Results & Outcomes</label>
+                                                    <textarea id="weeklyResults" rows="3" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #e9ecef;" placeholder="E.g. Completed feature X, resolved Y blocker..."></textarea>
+                                                </div>
+                                                <div style="margin-top: 18px;">
+                                                    <label for="weeklyActions" style="font-weight:600;">Action Items</label>
+                                                    <textarea id="weeklyActions" rows="2" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #e9ecef;" placeholder="E.g. Follow up with Z, schedule review..."></textarea>
+                                                </div>
+                                            </div>
+                                        `
+                                    },
+                                    monthly: {
+                                        title: "Monthly Deep-Dive",
+                                        content: `
+                                            <div class="insight-box">
+                                                <h4>📈 Monthly Deep-Dive</h4>
+                                                <p>Analyze performance, discuss strategic alignment, and set monthly goals. Fill in the details below.</p>
+                                                <div style="margin-top: 18px;">
+                                                    <label for="monthlyAnalysis" style="font-weight:600;">Performance Analysis</label>
+                                                    <textarea id="monthlyAnalysis" rows="3" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #e9ecef;" placeholder="E.g. Achieved 120% of target, improved process..."></textarea>
+                                                </div>
+                                                <div style="margin-top: 18px;">
+                                                    <label for="monthlyGoals" style="font-weight:600;">Strategic Goals</label>
+                                                    <textarea id="monthlyGoals" rows="2" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #e9ecef;" placeholder="E.g. Launch new campaign, reduce churn..."></textarea>
+                                                </div>
+                                            </div>
+                                        `
+                                    },
+                                    quarterly: {
+                                        title: "Quarterly Strategic",
+                                        content: `
+                                            <div class="insight-box">
+                                                <h4>🎯 Quarterly Strategic</h4>
+                                                <p>Plan career growth, review long-term objectives, and set quarterly milestones.</p>
+                                                <div style="margin-top: 18px;">
+                                                    <label for="quarterlyObjectives" style="font-weight:600;">Objectives</label>
+                                                    <textarea id="quarterlyObjectives" rows="3" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #e9ecef;" placeholder="E.g. Promotion readiness, skill development..."></textarea>
+                                                </div>
+                                                <div style="margin-top: 18px;">
+                                                    <label for="quarterlyMilestones" style="font-weight:600;">Milestones</label>
+                                                    <textarea id="quarterlyMilestones" rows="2" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #e9ecef;" placeholder="E.g. Complete certification, lead project..."></textarea>
+                                                </div>
+                                            </div>
+                                        `
+                                    },
+                                    project: {
+                                        title: "Project Debrief",
+                                        content: `
+                                            <div class="insight-box">
+                                                <h4>🚀 Project Debrief</h4>
+                                                <p>Analyze project outcomes, lessons learned, and next steps.</p>
+                                                <div style="margin-top: 18px;">
+                                                    <label for="projectOutcomes" style="font-weight:600;">Outcomes</label>
+                                                    <textarea id="projectOutcomes" rows="3" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #e9ecef;" placeholder="E.g. Delivered on time, exceeded KPIs..."></textarea>
+                                                </div>
+                                                <div style="margin-top: 18px;">
+                                                    <label for="projectLessons" style="font-weight:600;">Lessons Learned</label>
+                                                    <textarea id="projectLessons" rows="2" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #e9ecef;" placeholder="E.g. Improve communication, automate testing..."></textarea>
+                                                </div>
+                                            </div>
+                                        `
+                                    },
+                                    development: {
+                                        title: "Career Focus",
+                                        content: `
+                                            <div class="insight-box">
+                                                <h4>📚 Career Focus</h4>
+                                                <p>Discuss skills development and advancement planning.</p>
+                                                <div style="margin-top: 18px;">
+                                                    <label for="devSkills" style="font-weight:600;">Skills to Develop</label>
+                                                    <textarea id="devSkills" rows="3" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #e9ecef;" placeholder="E.g. Leadership, technical depth..."></textarea>
+                                                </div>
+                                                <div style="margin-top: 18px;">
+                                                    <label for="devPlan" style="font-weight:600;">Development Plan</label>
+                                                    <textarea id="devPlan" rows="2" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #e9ecef;" placeholder="E.g. Attend workshop, find mentor..."></textarea>
+                                                </div>
+                                            </div>
+                                        `
+                                    },
+                                    onboarding: {
+                                        title: "New Hire Integration",
+                                        content: `
+                                            <div class="insight-box">
+                                                <h4>👋 New Hire Integration</h4>
+                                                <p>Assess cultural fit, early wins, and support needs for new hires.</p>
+                                                <div style="margin-top: 18px;">
+                                                    <label for="onboardingWins" style="font-weight:600;">Early Wins</label>
+                                                    <textarea id="onboardingWins" rows="3" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #e9ecef;" placeholder="E.g. Completed onboarding, contributed to project..."></textarea>
+                                                </div>
+                                                <div style="margin-top: 18px;">
+                                                    <label for="onboardingSupport" style="font-weight:600;">Support Needs</label>
+                                                    <textarea id="onboardingSupport" rows="2" style="width:100%;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #e9ecef;" placeholder="E.g. More training, team introductions..."></textarea>
+                                                </div>
+                                            </div>
+                                        `
+                                    }
+                                };
+                    
+                                // Set content
+                                if (templates[templateType]) {
+                                    contentDiv.innerHTML = templates[templateType].content;
+                                } else {
+                                    contentDiv.innerHTML = `
+                                        <div class="insight-box">
+                                            <h4>👆 Select a meeting type above to load the optimized template</h4>
+                                            <p>Each template automatically tracks different KPIs and provides real-time performance insights as you complete the meeting.</p>
+                                        </div>
+                                    `;
+                                }
+                    
+                                // Optionally, add event listeners for metric calculation here
+                            }
+                    
+                            // Download buttons (stub implementations)
+                            function downloadExcel() {
+                                alert("Excel Analytics Pack download coming soon!");
+                            }
+                            function downloadPDF() {
+                                alert("Implementation Guide download coming soon!");
+                            }
+                            function downloadCSV() {
+                                alert("Performance Data download coming soon!");
+                            }
+                        </script>
+                    </body>
+                    </html>
